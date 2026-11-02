@@ -10,7 +10,7 @@ part, builds a signed bundle from them, and runs that bundle on a GB10.
 
 ## Status
 
-Phase 1 (lockfile and artifact store) in progress. See:
+Phase 1 (lockfile and artifact store) done; phase 2 (bundle build) in progress. See:
 
 - [ADR-001: scope and boundaries](docs/adr/ADR-001-scope-and-boundaries.md)
 - [PGX reference baseline](docs/baseline-pgx.md), the working installation the
