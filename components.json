@@ -1,0 +1,66 @@
+{
+  "schema": 1,
+  "images": [
+    {
+      "name": "qwen-vllm",
+      "ref": "ghcr.io/salient-data/qwen38-next-dgx@sha256:3d67df7b7b7d25a5da64f62c0f87f6109062584261fe77157f6d37de178d10b2",
+      "platform": "linux/arm64",
+      "note": "salient-data/qwen38-next-dgx-recipe build 2026-10-14-77154ca6 (prod image)"
+    },
+    {
+      "name": "embed-vllm",
+      "ref": "vllm/vllm-openai@sha256:61fc8a896b0a4fbbbdc063bc4b0dbc25ce98e02b5050c24aeb7830ac02039b14",
+      "platform": "linux/arm64",
+      "note": "vLLM v0.28.0"
+    },
+    {
+      "name": "postgres",
+      "ref": "postgres@sha256:ae69c452f483507a6b99fb654cf93aad7fe156ffd2c56247707eef4e36d3c12b",
+      "platform": "linux/arm64",
+      "note": "postgres:17"
+    },
+    {
+      "name": "hakoteca-core",
+      "ref": "hakoteca/core:0.2.3",
+      "image_id": "sha256:712079b1348d5c1ca9acd57bc6f03141d778aa7474166f93ffb460f144503647",
+      "platform": "linux/arm64",
+      "note": "Hakoteca v0.2.3, built by scripts/build-public-images.py; local build, no registry digest"
+    },
+    {
+      "name": "hakoteca-console-gateway",
+      "ref": "hakoteca/console-gateway:0.2.3",
+      "image_id": "sha256:ff376c2b1d6235444afa9494cc96b9f9f32f90b58043552fd7a007e58abd75be",
+      "platform": "linux/arm64",
+      "note": "Hakoteca v0.2.3, built by scripts/build-public-images.py; local build, no registry digest"
+    }
+  ],
+  "models": [
+    {
+      "name": "qwen38-flash-next-nvfp4",
+      "hf_repo": "nvidia/Qwen3.8-Flash-Next-NVFP4",
+      "revision": "fc694b54fb0174e0913e6adf86691ef85a4ead47",
+      "exclude": [".gitattributes"]
+    },
+    {
+      "name": "nemotron-3-embed-1b-nvfp4",
+      "hf_repo": "nvidia/Nemotron-3-Embed-1B-NVFP4",
+      "revision": "e58f16cdf28e3c57252bcaf65e9f60f357f717be",
+      "exclude": [".gitattributes"]
+    }
+  ],
+  "recipes": [
+    {
+      "name": "qwen38-next-dgx-recipe",
+      "git": "https://github.com/salient-data/qwen38-next-dgx-recipe",
+      "commit": "f309019de10d55774a579d42f71be67b2636ce8e",
+      "files": [
+        "recipe/draft-token-maps/d22ff5232d12f6935add32541a2a447976349217e5b125669fab0e92e3e2a20b.json",
+        "recipe/serve.args",
+        "recipe/serve.env",
+        "recipe/patches/PROVENANCE.md",
+        "LICENSE",
+        "NOTICE"
+      ]
+    }
+  ]
+}

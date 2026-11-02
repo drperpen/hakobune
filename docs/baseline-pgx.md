@@ -23,7 +23,7 @@ recorded here.
 | Item | Value |
 | --- | --- |
 | Image | `ghcr.io/salient-data/qwen38-next-dgx@sha256:3d67df7b7b7d25a5da64f62c0f87f6109062584261fe77157f6d37de178d10b2` (local ID `sha256:320ab0f7…`, 24.4 GB). It is the "prod" image of Salient Data's community recipe [`salient-data/qwen38-next-dgx-recipe`](https://github.com/salient-data/qwen38-next-dgx-recipe) (Apache-2.0), build `2026-10-14-77154ca6`, recipe commit `f309019de10d55774a579d42f71be67b2636ce8e` (checked out read-only at `~/ai_models/qwen38-next-dgx-recipe`). That build is `vllm/vllm-openai@sha256:a7deff2c…` (vLLM nightly `77154ca6116ae34cbfe314beef1016bde9b63989`, CUDA 13.0.2) plus 14 vLLM patches. The recipe's `recipe/pins.env` pins this exact digest and image ID, and the image is signed with `recipe/cosign.pub`. |
-| Weights | Hugging Face snapshot `fc694b54fb0174e0913e6adf86691ef85a4ead47`, 124 GB: ten `model-0000N-of-00010.safetensors` shards plus `model-fp8-mtp-ple.safetensors` (53.7 GB), tokenizer and config files. Repository `nvidia/Qwen3.8-Flash-Next-NVFP4` (NVIDIA's ModelOpt quantization of `Qwen/Qwen3.8-Flash-Next`), the revision pinned by the recipe's `MODEL_ID`/`MODEL_REVISION`. |
+| Weights | Hugging Face snapshot `fc694b54fb0174e0913e6adf86691ef85a4ead47`, 132.7 GB (124 GiB): ten `model-0000N-of-00010.safetensors` shards plus `model-fp8-mtp-ple.safetensors` (53.7 GB), tokenizer and config files. Repository `nvidia/Qwen3.8-Flash-Next-NVFP4` (NVIDIA's ModelOpt quantization of `Qwen/Qwen3.8-Flash-Next`), the revision pinned by the recipe's `MODEL_ID`/`MODEL_REVISION`. |
 | Mounts | weights read-only at `/hfrepo`; recipe cache `~/.cache/qwen38-next-dgx-recipe` (8.1 MB) read-write at `/root/.cache`. The cache holds the draft token map `draft-token-maps/d22ff523….json` that the speculative config requires, plus vLLM/FlashInfer compile caches. The same map is versioned in the recipe at `recipe/draft-token-maps/`; both copies hash to their name. |
 | Runtime | host network, `ipc=host`, 32 GiB shm, restart `unless-stopped`, GPU all |
 | Served names | `hakoteca-model`, `qwen3.8-flash-next`, on `127.0.0.1:8000` |
@@ -57,12 +57,12 @@ the `v0.2.3` tag; the public instance stack is described in Hakoteca's
 
 | Part | Size |
 | --- | --- |
-| Qwen weights | 124 GB |
+| Qwen weights | 132.7 GB (124 GiB) |
 | Qwen vLLM image | 24.4 GB (uncompressed) |
 | Embedding vLLM image | 20.6 GB (uncompressed) |
 | Embedding weights | 1 GB |
 | Core, gateway, PostgreSQL | 0.8 GB |
-| **Total** | **about 171 GB** |
+| **Total** | **about 180 GB** (decimal; 171 GiB) |
 
 The two vLLM images share only 6 of their layers (the Qwen image has 42, the
 embedding image 32), so the 20 GB is real. Separate `docker save` files would

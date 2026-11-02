@@ -1,0 +1,310 @@
+{
+  "schema": 1,
+  "images": [
+    {
+      "name": "qwen-vllm",
+      "ref": "ghcr.io/salient-data/qwen38-next-dgx@sha256:3d67df7b7b7d25a5da64f62c0f87f6109062584261fe77157f6d37de178d10b2",
+      "image_id": "sha256:320ab0f7dff536d4422a0bfdecc49b45d41d9a06cbccc7dcd1b1067f703d2dd4",
+      "platform": "linux/arm64",
+      "registry_digest": "sha256:3d67df7b7b7d25a5da64f62c0f87f6109062584261fe77157f6d37de178d10b2",
+      "size": 24434622055,
+      "note": "salient-data/qwen38-next-dgx-recipe build 2026-10-14-77154ca6 (prod image)"
+    },
+    {
+      "name": "embed-vllm",
+      "ref": "vllm/vllm-openai@sha256:61fc8a896b0a4fbbbdc063bc4b0dbc25ce98e02b5050c24aeb7830ac02039b14",
+      "image_id": "sha256:89154ef00dd15368d2b293c167e5cc7dbb521fcfb2fbb77510e0d4df2b820e8f",
+      "platform": "linux/arm64",
+      "registry_digest": "sha256:61fc8a896b0a4fbbbdc063bc4b0dbc25ce98e02b5050c24aeb7830ac02039b14",
+      "size": 20630219122,
+      "note": "vLLM v0.28.0"
+    },
+    {
+      "name": "postgres",
+      "ref": "postgres@sha256:ae69c452f483507a6b99fb654cf93aad7fe156ffd2c56247707eef4e36d3c12b",
+      "image_id": "sha256:a470461db3d4079fb4cb545328a6ef7c7d1ffc33e6981f5d3e2cfda1634d297e",
+      "platform": "linux/arm64",
+      "registry_digest": "sha256:ae69c452f483507a6b99fb654cf93aad7fe156ffd2c56247707eef4e36d3c12b",
+      "size": 476574478,
+      "note": "postgres:17"
+    },
+    {
+      "name": "hakoteca-core",
+      "ref": "hakoteca/core:0.2.3",
+      "image_id": "sha256:712079b1348d5c1ca9acd57bc6f03141d778aa7474166f93ffb460f144503647",
+      "platform": "linux/arm64",
+      "registry_digest": null,
+      "size": 241334407,
+      "note": "Hakoteca v0.2.3, built by scripts/build-public-images.py; local build, no registry digest"
+    },
+    {
+      "name": "hakoteca-console-gateway",
+      "ref": "hakoteca/console-gateway:0.2.3",
+      "image_id": "sha256:ff376c2b1d6235444afa9494cc96b9f9f32f90b58043552fd7a007e58abd75be",
+      "platform": "linux/arm64",
+      "registry_digest": null,
+      "size": 63809605,
+      "note": "Hakoteca v0.2.3, built by scripts/build-public-images.py; local build, no registry digest"
+    }
+  ],
+  "models": [
+    {
+      "name": "qwen38-flash-next-nvfp4",
+      "hf_repo": "nvidia/Qwen3.8-Flash-Next-NVFP4",
+      "revision": "fc694b54fb0174e0913e6adf86691ef85a4ead47",
+      "verified_against": "hf-tree",
+      "size": 132734505212,
+      "files": [
+        {
+          "path": "README.md",
+          "size": 12109,
+          "sha256": "e3ed0cb89950ef0f41e8df344ba1cc15c67e1baf91e1cb5305a7344e58a8d975"
+        },
+        {
+          "path": "chat_template.jinja",
+          "size": 8952,
+          "sha256": "c3cf9e34abf4f9e36c2d72165aa9c132d3e2a725b6c2586aaa3a8af9d7a81041"
+        },
+        {
+          "path": "config.json",
+          "size": 30820,
+          "sha256": "deef67a61f3311faf051b23dc4192f442c7fee4f9cd2f38cbcbe4da55c763a80"
+        },
+        {
+          "path": "generation_config.json",
+          "size": 202,
+          "sha256": "e70c136c1b78ddc1fb0905bac8e733a4dc448d4f852a5dd75143fffc70be550e"
+        },
+        {
+          "path": "hf_quant_config.json",
+          "size": 23001,
+          "sha256": "331ad11d57c8bc374554579977198084e0d4d0933d5b3558f125f6f670aba0e8"
+        },
+        {
+          "path": "merges.txt",
+          "size": 3353259,
+          "sha256": "a9d356d7bdf1ef4949e3e748e95b8e10ad9d4e2e838eddc38a0a7b6b94d1db8d"
+        },
+        {
+          "path": "model-00001-of-00010.safetensors",
+          "size": 3115991696,
+          "sha256": "63fde954be6f08b49b876f4f70a0ad0bcfee71aff7b1faa33779b6b32feca2a2"
+        },
+        {
+          "path": "model-00002-of-00010.safetensors",
+          "size": 10005510304,
+          "sha256": "4dafaef62a908e49e0d92c7c2a3fa99f4d9651fdeeb0ca09f09a9b40095af4e0"
+        },
+        {
+          "path": "model-00003-of-00010.safetensors",
+          "size": 10005364728,
+          "sha256": "3218ddc129258e91a721a8e81329ca8f00588332ec721bd8d2cf7d20e324bf47"
+        },
+        {
+          "path": "model-00004-of-00010.safetensors",
+          "size": 10006060112,
+          "sha256": "55e2bdf6a3a1f6e65270787f65c63b2a2a56b308b54eb1fb318dfabc9b48b141"
+        },
+        {
+          "path": "model-00005-of-00010.safetensors",
+          "size": 10005362392,
+          "sha256": "d3c169d3694bfba846455d01e48f047d770f78d071c5a4d22f129389411d686e"
+        },
+        {
+          "path": "model-00006-of-00010.safetensors",
+          "size": 10005375328,
+          "sha256": "38f65a9d11090428e139cc60d0587e8e5433ea2ce79820883c583d7cfcc53130"
+        },
+        {
+          "path": "model-00007-of-00010.safetensors",
+          "size": 10005956544,
+          "sha256": "8cf3fa05c04cb2e060963b69bb01f7a7b9f43c58435fbe380836a0457a19cd3e"
+        },
+        {
+          "path": "model-00008-of-00010.safetensors",
+          "size": 10005375200,
+          "sha256": "53d1f80746aa0cc0a7c2f4836587002a8a4dd72c827432cd2e43abae3c3899e4"
+        },
+        {
+          "path": "model-00009-of-00010.safetensors",
+          "size": 5679113808,
+          "sha256": "eaff6a87ece6fbfd6ad0fbaa0a5cf9ff542f8076acba38e62410b1ed55e12cc3"
+        },
+        {
+          "path": "model-00010-of-00010.safetensors",
+          "size": 128587536,
+          "sha256": "0d49b0cf7c15bf9b5bd1e17403b36727315860a8f2a2e0f5a53655547084f640"
+        },
+        {
+          "path": "model-fp8-mtp-ple.safetensors",
+          "size": 53717551730,
+          "sha256": "3525520c8602d850003eb1960aec0b64291dae33b83f8b65dd639a451df78823"
+        },
+        {
+          "path": "model.safetensors.index.json",
+          "size": 31275518,
+          "sha256": "660414e8300728ba80062e6a3c81cb76a65e2ab136ac9e9ceb450ba0c51c3c0d"
+        },
+        {
+          "path": "preprocessor_config.json",
+          "size": 390,
+          "sha256": "27225450ac9c6529872ee1924fcb0962ff5634834f817040f444118116f4e516"
+        },
+        {
+          "path": "processor_config.json",
+          "size": 1191,
+          "sha256": "d89ef49ce9cd37fbf510158e13c1ef063d9286411c1ec9049932dbe0487143b1"
+        },
+        {
+          "path": "tokenizer.json",
+          "size": 12809320,
+          "sha256": "0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3"
+        },
+        {
+          "path": "tokenizer_config.json",
+          "size": 17928,
+          "sha256": "b11349aafa7cdc6a320767cf7ceb29ed82f7eda5d65e8e0819e76f0ce947bf27"
+        },
+        {
+          "path": "video_preprocessor_config.json",
+          "size": 385,
+          "sha256": "7768af27c1fafa9cc9011c1dc20067e03f8915e03b63504550e11d5066986d13"
+        },
+        {
+          "path": "vocab.json",
+          "size": 6722759,
+          "sha256": "ce99b4cb2983d118806ce0a8b777a35b093e2000a503ebde25853284c9dfa003"
+        }
+      ]
+    },
+    {
+      "name": "nemotron-3-embed-1b-nvfp4",
+      "hf_repo": "nvidia/Nemotron-3-Embed-1B-NVFP4",
+      "revision": "e58f16cdf28e3c57252bcaf65e9f60f357f717be",
+      "verified_against": "hf-download-metadata",
+      "size": 1044952680,
+      "files": [
+        {
+          "path": "1_Pooling/config.json",
+          "size": 298,
+          "sha256": "6dcf44c2f7e7878ac0ee2e992c8e7d1f6812e12724b00d1d0cb0fa3336f07f0d"
+        },
+        {
+          "path": "CONTRIBUTING.md",
+          "size": 2511,
+          "sha256": "bd0b6e3e1be8b2d9443f907bd44b24d0eabaf37cf66558cadb83818a7dcec78c"
+        },
+        {
+          "path": "LICENSE",
+          "size": 2796,
+          "sha256": "5ae76a0d16eef67e28c81bfdb0b3c8687d14e9b57094090151e7541aac457ae9"
+        },
+        {
+          "path": "NOTICE",
+          "size": 1381,
+          "sha256": "22f544b05a669f13a6f59920debbc86d2031c0420763c8421dcdc05f5db27f57"
+        },
+        {
+          "path": "README.md",
+          "size": 25877,
+          "sha256": "96628aefa09200d579bb253007acc380752dce9e77f57774b554a46f1a61d10b"
+        },
+        {
+          "path": "THIRD_PARTY_NOTICES.md",
+          "size": 24773,
+          "sha256": "309735912e02e1c79ead9693958d23ed40795aa56b3004bb619bdbb868c8dd67"
+        },
+        {
+          "path": "config.json",
+          "size": 2040,
+          "sha256": "2d31f78d7d8e60d69c14da92954e40eedea32a6e8db3fa9a316c9e4a049d77d0"
+        },
+        {
+          "path": "config_sentence_transformers.json",
+          "size": 261,
+          "sha256": "dc2bc223baa9e5eedd8593d1d4230210681001e7dec73ac53d89697df97079ee"
+        },
+        {
+          "path": "hf_quant_config.json",
+          "size": 295,
+          "sha256": "33f124d2093f8d08aee8d82d36e651baee2e7c37b1ad474bc2728cefdc5172a7"
+        },
+        {
+          "path": "model.safetensors",
+          "size": 1027789672,
+          "sha256": "f2753954c89055eb679a45b7dfea27a3e05c04ecbdb1f4e6c086180fe8c32bc7"
+        },
+        {
+          "path": "modules.json",
+          "size": 350,
+          "sha256": "21ddb3037a55ebf4549eb5c1dc44c3f28f10b56ec7f1335c92fd90e5b30d88ac"
+        },
+        {
+          "path": "quantization_metadata.json",
+          "size": 3553,
+          "sha256": "253540001763781c33834b109bf8d62b266320c7ff8c99b28035ded1232b60c1"
+        },
+        {
+          "path": "sentence_bert_config.json",
+          "size": 56,
+          "sha256": "0b1d25d4d13c72c255a7eaaf8921ca481c4cd61ad894e7209c52dc5e1ac3f3bd"
+        },
+        {
+          "path": "tokenizer.json",
+          "size": 17077678,
+          "sha256": "797410dfb649a5b9ba92bc4fef7dbf4022d00e73de6867c4ac199a8846439421"
+        },
+        {
+          "path": "tokenizer_config.json",
+          "size": 21139,
+          "sha256": "7bbb77c55282bc679b86d21a1b3953ed8d5d63aaf75f10800c20596eab30b980"
+        }
+      ]
+    }
+  ],
+  "recipes": [
+    {
+      "name": "qwen38-next-dgx-recipe",
+      "git": "https://github.com/salient-data/qwen38-next-dgx-recipe",
+      "commit": "f309019de10d55774a579d42f71be67b2636ce8e",
+      "files": [
+        {
+          "path": "LICENSE",
+          "size": 11357,
+          "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+          "git_blob": "261eeb9e9f8b2b4b0d119366dda99c6fd7d35c64"
+        },
+        {
+          "path": "NOTICE",
+          "size": 2558,
+          "sha256": "c42501951dba5497e36548889cf40321f40059cd216b1aef1f9fd683336c3a74",
+          "git_blob": "cb2dc23a0a3d2342df4f7522999f067182781f5f"
+        },
+        {
+          "path": "recipe/draft-token-maps/d22ff5232d12f6935add32541a2a447976349217e5b125669fab0e92e3e2a20b.json",
+          "size": 218252,
+          "sha256": "d22ff5232d12f6935add32541a2a447976349217e5b125669fab0e92e3e2a20b",
+          "git_blob": "85a17a8e656d97111010f6e0b9425f142348536d"
+        },
+        {
+          "path": "recipe/patches/PROVENANCE.md",
+          "size": 3312,
+          "sha256": "f4778110d087edb3d2e216a48539edab0f7fa04bbcae1b2856120549d1691cca",
+          "git_blob": "61fc8209f8532ee6905a60c04f648a5be9111f59"
+        },
+        {
+          "path": "recipe/serve.args",
+          "size": 1092,
+          "sha256": "988a2f726f0b54f8c617a73d2ced0c0c44511d7256cde8d034fe0de720cbb5a6",
+          "git_blob": "adbbd0727d01e9d6ba6a8ce8028c5db1fef1e6b4"
+        },
+        {
+          "path": "recipe/serve.env",
+          "size": 297,
+          "sha256": "0f54658c33c8983239a390b05bf286835398c34f6b99d55a54f2055312adc8d3",
+          "git_blob": "63cc70989fa579dbfd8f300cc32f6591d74316c6"
+        }
+      ]
+    }
+  ]
+}

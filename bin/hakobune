@@ -1,0 +1,4 @@
+#!/bin/sh
+# Development entry point. Release bundles ship hakobune as a zipapp (phase 2).
+here=$(cd "$(dirname "$0")/.." && pwd)
+PYTHONPATH="$here/src" exec python3 -m hakobune --root "$here" "$@"

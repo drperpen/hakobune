@@ -2,6 +2,10 @@
 /store/
 /bundles/
 /dist/
+*.partial
+
+# Where this machine keeps the sources (paths are machine-specific)
+hakobune.local.json
 *.tar
 *.tar.gz
 *.tar.zst

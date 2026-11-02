@@ -10,13 +10,16 @@ part, builds a signed bundle from them, and runs that bundle on a GB10.
 
 ## Status
 
-Phase 0 done (ADR-001 accepted 2026-11-02); phase 1 (lockfile and artifact store) next. See:
+Phase 1 (lockfile and artifact store) in progress. See:
 
 - [ADR-001: scope and boundaries](docs/adr/ADR-001-scope-and-boundaries.md)
 - [PGX reference baseline](docs/baseline-pgx.md), the working installation the
   first release reproduces
+- [Lockfile and artifact store](docs/lockfile-and-store.md): `bin/hakobune lock | collect | verify | status`
 - [Roadmap](docs/roadmap.md)
 - [Third-party register](docs/third-party.md)
+
+Tests use only the standard library: `python3 -m unittest discover -s tests`.
 
 ## What this repository never contains
 

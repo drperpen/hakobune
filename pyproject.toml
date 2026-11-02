@@ -1,0 +1,13 @@
+[project]
+name = "hakobune"
+dynamic = ["version"]
+description = "Offline Hakoteca installer for the NVIDIA DGX Spark (GB10)"
+requires-python = ">=3.12"
+dependencies = []  # standard library only (ADR-001 §7)
+
+[tool.setuptools.dynamic]
+version = { attr = "hakobune.__version__" }
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
