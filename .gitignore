@@ -1,0 +1,35 @@
+# Artifact store, built bundles and exported images
+/store/
+/bundles/
+/dist/
+*.tar
+*.tar.gz
+*.tar.zst
+*.squashfs
+*.img
+*.iso
+
+# Model weights and caches
+*.safetensors
+*.gguf
+*.bin
+*.pt
+*.pth
+*.onnx
+
+# Secrets, keys and site data
+/sites/
+*.key
+*.pem
+*.p12
+*.minisign
+*.env
+!*.env.example
+secrets/
+
+# Tooling
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
