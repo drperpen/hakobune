@@ -191,12 +191,34 @@ class Store:
         self._record(rel, f["sha256"])
         print(f"  stored  {f['path']}", flush=True)
 
-    def _image_path(self, e: dict) -> str:
+    def image_path(self, e: dict) -> str:
         return os.path.join(self.root, "images", f"{e['name']}.tar")
+
+    def image_sha256(self, e: dict) -> str:
+        """The archive's sha256, re-verifying it unless the state shows it unchanged."""
+        if not self._image_good(e):
+            path = self.image_path(e)
+            if not os.path.exists(path):
+                raise HakobuneError(f"image {e['name']} is not in the store; run 'hakobune collect'")
+            print(f"verifying image {e['name']}", flush=True)
+            self._record_image(e, docker.verify_archive(path, e["image_id"]))
+        return self.state["images"][e["name"]]["sha256"]
+
+    def require_good(self, rel: str, f: dict) -> None:
+        """Make sure a store file matches the lock, hashing it unless the state shows it unchanged."""
+        if self._known_good(rel, f["sha256"]):
+            return
+        path = os.path.join(self.root, rel)
+        if not os.path.exists(path):
+            raise HakobuneError(f"{rel} is not in the store; run 'hakobune collect'")
+        progress = hashing.Progress(f["path"], f["size"]).advance if f["size"] > 1e9 else None
+        if os.path.getsize(path) != f["size"] or hashing.sha256_file(path, progress) != f["sha256"]:
+            raise HakobuneError(f"{rel} in the store does not match the lock; run 'hakobune collect'")
+        self._record(rel, f["sha256"])
 
     def _image_good(self, e: dict) -> bool:
         rec = self.state["images"].get(e["name"])
-        now = self._stat_key(self._image_path(e))
+        now = self._stat_key(self.image_path(e))
         return bool(rec and now and rec["image_id"] == e["image_id"] and all(rec[k] == now[k] for k in now))
 
     def _collect_image(self, e: dict) -> None:
@@ -204,7 +226,7 @@ class Store:
         if self._image_good(e):
             print("  ok", flush=True)
             return
-        dst = self._image_path(e)
+        dst = self.image_path(e)
         local = docker.inspect(e["ref"])
         if local.image_id != e["image_id"]:
             raise HakobuneError(f"image {e['name']}: {e['ref']} is now {local.image_id}, lock pins {e['image_id']}")
@@ -231,7 +253,7 @@ class Store:
 
     def _record_image(self, e: dict, check) -> None:
         self.state["images"][e["name"]] = {
-            **self._stat_key(self._image_path(e)),
+            **self._stat_key(self.image_path(e)),
             "image_id": e["image_id"],
             "sha256": check.sha256,
         }
@@ -245,7 +267,7 @@ class Store:
         for kind, e in self.entries(only):
             print(f"{kind[:-1]} {e['name']}", flush=True)
             if kind == "images":
-                path = self._image_path(e)
+                path = self.image_path(e)
                 if not os.path.exists(path):
                     problems.append(f"{e['name']}: image archive missing")
                     continue
@@ -279,7 +301,7 @@ class Store:
         expected = {"state.json", ".lock"}
         for kind, e in self.entries(None):
             if kind == "images":
-                expected.add(os.path.relpath(self._image_path(e), self.root))
+                expected.add(os.path.relpath(self.image_path(e), self.root))
             else:
                 expected.update(os.path.join(kind, e["name"], f["path"]) for f in e["files"])
         found = set()
@@ -294,7 +316,7 @@ class Store:
             if kind == "images":
                 if self._image_good(e):
                     s = "verified"
-                elif os.path.exists(self._image_path(e)):
+                elif os.path.exists(self.image_path(e)):
                     s = "present, not verified"
                 else:
                     s = "missing"

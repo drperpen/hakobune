@@ -79,6 +79,25 @@ def make_git_repo(test: TempDirTest, files: dict[str, bytes]) -> tuple[str, str]
     return repo, commit
 
 
+def layer_tar(files: dict) -> bytes:
+    """An image layer: {path: bytes} for files, {path: None} for a directory,
+    {path: ("link", target)} for a symlink."""
+    buf = io.BytesIO()
+    with tarfile.open(fileobj=buf, mode="w") as tar:
+        for name, data in files.items():
+            info = tarfile.TarInfo(name)
+            if data is None:
+                info.type = tarfile.DIRTYPE
+                tar.addfile(info)
+            elif isinstance(data, tuple):
+                info.type, info.linkname = tarfile.SYMTYPE, data[1]
+                tar.addfile(info)
+            else:
+                info.size = len(data)
+                tar.addfile(info, io.BytesIO(data))
+    return buf.getvalue()
+
+
 def make_image_archive(path: str, layers: list[bytes], tamper_layer: bool = False,
                        diff_ids: list[str] | None = None) -> str:
     """A `docker save` style archive; returns its image ID."""

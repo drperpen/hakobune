@@ -4,8 +4,8 @@
 | --- | --- | --- |
 | **0. Scope** (done) | ADR-001, PGX baseline, third-party register, repository rules | Documentation |
 | **1. Lockfile and artifact store** (done; `fetch` deferred until a build happens off PGX) | `hakobune.lock` pinning every image digest and every weight file's sha256; `hakobune fetch`/`collect` fills the gitignored store from registries or from PGX's local images and weights, and verifies it; provenance gaps closed | PGX, read-only |
-| **2. Bundle build** (in progress) | `hakobune build`, `sign`, `verify`; notices; measured size | PGX, writes only to the store |
-| **3. Install** | Preflight; layout; secret generation; Compose project and systemd unit; PostgreSQL init and Hakoteca migrations; model readiness waits; health checks; idempotent re-runs; `uninstall` for rehearsals | Rehearsal GB10 |
+| **2. Bundle build** (done; signing key location open, see [bundle](bundle.md)) | `hakobune build`, `sign`, `verify`; notices; measured size | PGX, writes only to the store |
+| **3. Install** (next) | Preflight; layout; secret generation; Compose project and systemd unit; PostgreSQL init and Hakoteca migrations; model readiness waits; health checks; idempotent re-runs; `uninstall` for rehearsals | Rehearsal GB10 |
 | **4. Commission** | Site profile; hostname, TLS via Hakoteca Offline PKI, trusted proxy; first administrator; acceptance checks | Rehearsal GB10 |
 | **5. Lifecycle** | `status`, `upgrade` (backup, then migrate), `rollback`, `backup`/`restore`, redacted diagnostic bundle | Rehearsal GB10 |
 | **6. Delivery** | `hakobune push` over LAN (resumable rsync), USB SSD procedure, delta upgrades | Operator machine to rehearsal GB10 |

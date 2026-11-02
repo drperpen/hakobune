@@ -1,4 +1,4 @@
-"""Command line: hakobune lock | collect | verify | status."""
+"""Command line: hakobune lock | collect | verify | status | build | keygen | sign."""
 
 from __future__ import annotations
 
@@ -68,6 +68,11 @@ def cmd_collect(args) -> int:
 
 
 def cmd_verify(args) -> int:
+    if args.bundle:
+        from hakobune.bundle import verify_bundle
+
+        verify_bundle(args.bundle, args.pubkey, allow_unsigned=args.unsigned, quick=args.quick)
+        return 0
     store, _local = _store(args)
     with store.open():
         problems = store.verify(set(args.only) or None)
@@ -89,6 +94,45 @@ def cmd_status(args) -> int:
     return 0
 
 
+def cmd_build(args) -> int:
+    from hakobune.bundle import build
+
+    comp_path, lock_path, local_path = _paths(args)
+    components = load_components(comp_path)
+    store, _local = _store(args)
+    out = os.path.abspath(args.out or os.path.join(os.path.abspath(args.root), "bundles"))
+    os.makedirs(out, exist_ok=True)
+    build(os.path.abspath(args.root), components, store.lock, store, args.release, out, link=not args.copy)
+    return 0
+
+
+def cmd_keygen(args) -> int:
+    from hakobune import signing
+
+    fp = signing.keygen(args.out)
+    print(f"wrote {args.out} (private, mode 600) and {args.out}.pub")
+    print(f"fingerprint {fp}")
+    print("keep the private key offline and backed up; installs trust the public key's fingerprint")
+    return 0
+
+
+def cmd_sign(args) -> int:
+    from hakobune import signing
+    from hakobune.bundle import MANIFEST, SIGNATURE, verify_bundle
+
+    manifest = os.path.join(args.bundle, MANIFEST)
+    sig = os.path.join(args.bundle, SIGNATURE)
+    if os.path.exists(sig):
+        raise HakobuneError(f"{sig} exists; a bundle is signed once")
+    # Sign only what verifies: a corrupted bundle must not get a valid signature.
+    verify_bundle(args.bundle, None, allow_unsigned=True, quick=args.quick)
+    signing.sign(manifest, args.key, sig + ".partial")
+    os.chmod(sig + ".partial", 0o444)
+    os.replace(sig + ".partial", sig)
+    print(f"signed {args.bundle}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="hakobune", description=__doc__)
     parser.add_argument("--version", action="version", version=f"hakobune {__version__}")
@@ -106,9 +150,30 @@ def main(argv: list[str] | None = None) -> int:
         p = sub.add_parser(name, help=text)
         p.add_argument("--only", action="append", default=[], metavar="NAME", help="limit to one component (repeatable)")
         p.set_defaults(func=func)
+        if name == "verify":
+            p.add_argument("--bundle", metavar="DIR", help="verify a bundle instead of the store")
+            p.add_argument("--pubkey", help="public key that must have signed the bundle")
+            p.add_argument("--unsigned", action="store_true", help="accept a bundle without checking a signature")
+            p.add_argument("--quick", action="store_true", help="bundle: check sizes only, no hashing")
 
     p = sub.add_parser("status", help="show what the store holds, without hashing")
     p.set_defaults(func=cmd_status)
+
+    p = sub.add_parser("build", help="build a bundle from the store")
+    p.add_argument("--release", required=True, help="e.g. 2026.11.0 (operator-approved) or 2026.11.0-dev.1")
+    p.add_argument("--out", help="directory for bundles (default: bundles/)")
+    p.add_argument("--copy", action="store_true", help="copy instead of hardlinking from the store")
+    p.set_defaults(func=cmd_build)
+
+    p = sub.add_parser("keygen", help="create an Ed25519 signing key")
+    p.add_argument("--out", required=True, help="private key path; the public key goes to PATH.pub")
+    p.set_defaults(func=cmd_keygen)
+
+    p = sub.add_parser("sign", help="verify a bundle, then sign its manifest")
+    p.add_argument("bundle")
+    p.add_argument("--key", required=True, help="private key file (mode 600)")
+    p.add_argument("--quick", action="store_true", help="check sizes only before signing")
+    p.set_defaults(func=cmd_sign)
 
     args = parser.parse_args(argv)
     try:

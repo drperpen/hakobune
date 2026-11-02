@@ -71,6 +71,65 @@ class _HashingReader:
             pass
 
 
+MAX_EXTRACT = 8 * 1024 * 1024
+
+
+def read_image_files(path: str, wanted: list[str]) -> dict[str, bytes]:
+    """Read files from the image's final filesystem, without loading the image.
+
+    `wanted` holds exact paths ("NGC-DL-CONTAINER-LICENSE") or directory prefixes
+    ending in "/" ("usr/share/doc/hakoteca/LICENSES/"). Layers are applied in
+    order, with Docker's whiteouts. Only regular files up to 8 MB are read. An
+    exact path that is missing or not a regular file is an error.
+    """
+
+    def matches(name: str) -> bool:
+        return any(name == w or (w.endswith("/") and name.startswith(w)) for w in wanted)
+
+    files: dict[str, bytes] = {}
+    odd: dict[str, str] = {}  # wanted paths that are links or too large
+    try:
+        with tarfile.open(path, "r:") as outer:
+            manifest = json.load(outer.extractfile("manifest.json"))
+            for layer in manifest[0]["Layers"]:
+                added: set[str] = set()
+                with tarfile.open(fileobj=outer.extractfile(layer), mode="r:") as inner:
+                    for m in inner:
+                        name = m.name.removeprefix("./").rstrip("/")
+                        parent, base = name.rpartition("/")[::2]
+                        if base == ".wh..wh..opq":
+                            prefix = parent + "/"
+                            for k in [k for k in files if k.startswith(prefix) and k not in added]:
+                                del files[k]
+                            continue
+                        if base.startswith(".wh."):
+                            gone = (parent + "/" if parent else "") + base[4:]
+                            for k in [k for k in files if k == gone or k.startswith(gone + "/")]:
+                                del files[k]
+                                odd.pop(k, None)
+                            continue
+                        if not matches(name):
+                            continue
+                        if m.isfile() and m.size <= MAX_EXTRACT:
+                            files[name] = inner.extractfile(m).read()
+                            added.add(name)
+                            odd.pop(name, None)
+                        elif not m.isdir():
+                            files.pop(name, None)
+                            odd[name] = "a link" if (m.issym() or m.islnk()) else "too large or special"
+    except (tarfile.TarError, KeyError, json.JSONDecodeError) as e:
+        raise HakobuneError(f"{path}: cannot read image files: {e}") from None
+    for w in wanted:
+        if not w.endswith("/"):
+            if w in odd:
+                raise HakobuneError(f"{path}: {w} is {odd[w]}")
+            if w not in files:
+                raise HakobuneError(f"{path}: {w} not found in the image")
+        elif not any(k.startswith(w) for k in files):
+            raise HakobuneError(f"{path}: nothing under {w} in the image")
+    return files
+
+
 @dataclass(frozen=True)
 class ArchiveCheck:
     sha256: str

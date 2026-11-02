@@ -81,10 +81,26 @@ class RecipeSpec:
 
 
 @dataclass(frozen=True)
+class NoticeSpec:
+    """A file for the bundle's notices/: copied from a component, or still pending."""
+
+    to: str  # path under notices/; ends in "/" when path is a directory prefix
+    kind: str | None = None  # image | model | recipe
+    source: str | None = None  # component name
+    path: str | None = None  # exact path, or prefix ending in "/"
+    pending: str | None = None  # why it cannot be shipped yet
+
+
+REVIEW_STATES = ("pending", "approved")
+
+
+@dataclass(frozen=True)
 class Components:
     images: tuple[ImageSpec, ...]
     models: tuple[ModelSpec, ...]
     recipes: tuple[RecipeSpec, ...]
+    notices: tuple[NoticeSpec, ...] = ()
+    review: dict = field(default_factory=dict)  # component name -> pending | approved
 
 
 def load_components(path: str) -> Components:
@@ -131,7 +147,30 @@ def load_components(path: str) -> Components:
         for f in files:
             check_relpath(f, f"{path}: recipe {item['name']}")
         recipes.append(RecipeSpec(item["name"], item.get("git", ""), commit, files))
-    return Components(tuple(images), tuple(models), tuple(recipes))
+    review = {}
+    for kind in ("images", "models", "recipes"):
+        for item in data.get(kind, []):
+            state = item.get("review", "pending")
+            if state not in REVIEW_STATES:
+                raise HakobuneError(f"{path}: {item['name']}: review must be one of {REVIEW_STATES}")
+            review[item["name"]] = state
+    notices = []
+    kinds = {"image": {i.name for i in images}, "model": {m.name for m in models}, "recipe": {r.name for r in recipes}}
+    for item in data.get("notices", []):
+        to = item.get("to", "")
+        check_relpath(to.rstrip("/"), f"{path}: notice")
+        if "pending" in item:
+            notices.append(NoticeSpec(to, pending=str(item["pending"])))
+            continue
+        kind, _, source = str(item.get("from", "")).partition(":")
+        if source not in kinds.get(kind, ()):
+            raise HakobuneError(f"{path}: notice {to}: unknown source {item.get('from')!r}")
+        src_path = item.get("path", "")
+        check_relpath(src_path.rstrip("/"), f"{path}: notice {to}")
+        if src_path.endswith("/") != to.endswith("/"):
+            raise HakobuneError(f"{path}: notice {to}: a directory must be copied to a directory")
+        notices.append(NoticeSpec(to, kind, source, src_path))
+    return Components(tuple(images), tuple(models), tuple(recipes), tuple(notices), review)
 
 
 @dataclass(frozen=True)
