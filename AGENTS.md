@@ -12,7 +12,7 @@
 
 ## Machines and authority
 
-- **PGX** (`192.168.0.149`) is the build and reference machine. It runs the
+- **PGX** is the build and reference machine. It runs the
   Hakoteca dev installation **and the public client instance**
   (`console.hakoteca.co.jp`). On PGX, Hakobune may only read: inspect containers,
   images and files, hash weights, export images with `docker save`, build bundles
