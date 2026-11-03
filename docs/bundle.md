@@ -13,7 +13,13 @@ hakobune-<release>/
   models/<name>/...      weights as served
   recipes/<name>/...     recipe files at the pinned commit
   notices/               principal licenses and notices, with README.md as the index
+  admin-guide/           appliance pages for Hako's Admin Guide (appliance-*.md)
 ```
+
+`manifest.json` also records `hako`: the Hako version, commit, Alembic heads,
+database setup steps, production-required settings, listen address and health
+path, read from the Hako release manifest in the `hakoteca-core` image (Hako
+ADR-024). It is `null` when the image has no usable manifest.
 
 ## Commands
 
@@ -37,7 +43,12 @@ A release version (`YYYY.MM.N`) is chosen by the operator (AGENTS.md).
   `docs/third-party.md`;
 - no notice is still `pending`;
 - the checkout has no uncommitted changes;
-- `hakobune.lock` matches `components.json`.
+- `hakobune.lock` matches `components.json`;
+- the locked `hakoteca-core` image carries a Hako release manifest (Hako 0.4.0 or
+  later) whose image tags and version match the lock;
+- `admin-guide/` has every page Hako's guide links to (`hako.REQUIRED_PAGES`).
+  Pages must be named `appliance-*.md` and start with Hako's frontmatter; a badly
+  named or unformatted page fails every build.
 
 A test build (`YYYY.MM.N-dev.N`) skips these gates but lists what is missing in
 `manifest.json` (`release_blockers`) and in `notices/README.md`.

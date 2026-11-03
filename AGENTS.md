@@ -36,6 +36,28 @@
   them in a bundle, a manifest or command arguments.
 - Back up the database before any migration on a machine holding real data.
 
+## Hako release contract
+
+Hako (the product, repository `hakoteca-hako`, `~/projects/hakoteca` on PGX) defines
+what Hakobune may rely on in its ADR-024 "Deployment by Hakobune". The dependency is
+one-way: Hakobune consumes Hako release images and never edits Hako; anything
+Hakobune needs from Hako is a Hako change made there.
+
+- Read Hako's contract from `/usr/share/hakoteca/release.json` in the locked
+  `hakoteca-core` image (`src/hakobune/hako.py`; Hako 0.4.0 or later). Do not
+  hard-code Hako settings, migration revisions or commands that the manifest
+  provides.
+- Set up the database with `python -m hakoteca_core.security.postgres_roles` from
+  the Core image, in the order the manifest's `database_setup` gives.
+- Render `HAKOTECA_APPLIANCE_RELEASE=<release>` and
+  `HAKOTECA_ADMIN_GUIDE_EXTRA_DIR` (the installed `admin-guide/`, read-only) into
+  Core's environment.
+- `admin-guide/` holds the customer-facing appliance pages, in Hako's guide format.
+  Hako's guide links to six fixed names (`hako.REQUIRED_PAGES`); a release bundle
+  needs all of them. Pages are customer-facing: no hostnames, addresses, customer
+  names or secrets, and they describe only commands that exist. A change to an
+  installer command updates its page in the same commit.
+
 ## Third-party content
 
 Every redistributed image, model and binary needs an entry in

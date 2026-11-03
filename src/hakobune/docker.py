@@ -74,13 +74,14 @@ class _HashingReader:
 MAX_EXTRACT = 8 * 1024 * 1024
 
 
-def read_image_files(path: str, wanted: list[str]) -> dict[str, bytes]:
+def read_image_files(path: str, wanted: list[str], required: bool = True) -> dict[str, bytes]:
     """Read files from the image's final filesystem, without loading the image.
 
     `wanted` holds exact paths ("NGC-DL-CONTAINER-LICENSE") or directory prefixes
     ending in "/" ("usr/share/doc/hakoteca/LICENSES/"). Layers are applied in
     order, with Docker's whiteouts. Only regular files up to 8 MB are read. An
-    exact path that is missing or not a regular file is an error.
+    exact path that is missing or not a regular file is an error, as is an empty
+    prefix, unless `required` is False (then missing paths are simply absent).
     """
 
     def matches(name: str) -> bool:
@@ -119,7 +120,7 @@ def read_image_files(path: str, wanted: list[str]) -> dict[str, bytes]:
                             odd[name] = "a link" if (m.issym() or m.islnk()) else "too large or special"
     except (tarfile.TarError, KeyError, json.JSONDecodeError) as e:
         raise HakobuneError(f"{path}: cannot read image files: {e}") from None
-    for w in wanted:
+    for w in wanted if required else []:
         if not w.endswith("/"):
             if w in odd:
                 raise HakobuneError(f"{path}: {w} is {odd[w]}")

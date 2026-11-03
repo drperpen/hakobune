@@ -5,9 +5,9 @@
 | **0. Scope** (done) | ADR-001, PGX baseline, third-party register, repository rules | Documentation |
 | **1. Lockfile and artifact store** (done; `fetch` deferred until a build happens off PGX) | `hakobune.lock` pinning every image digest and every weight file's sha256; `hakobune fetch`/`collect` fills the gitignored store from registries or from PGX's local images and weights, and verifies it; provenance gaps closed | PGX, read-only |
 | **2. Bundle build** (done; signing key location open, see [bundle](bundle.md)) | `hakobune build`, `sign`, `verify`; notices; measured size | PGX, writes only to the store |
-| **3. Install** (next) | Preflight; layout; secret generation; Compose project and systemd unit; PostgreSQL init and Hakoteca migrations; model readiness waits; health checks; idempotent re-runs; `uninstall` for rehearsals | Rehearsal GB10 |
+| **3. Install** (next) | Preflight; layout; secret generation; Compose project and systemd unit; PostgreSQL init with Hako's `database_setup` steps and migrations; Core settings including `HAKOTECA_APPLIANCE_RELEASE` and `HAKOTECA_ADMIN_GUIDE_EXTRA_DIR`; model readiness waits; health checks; idempotent re-runs; `uninstall` for rehearsals; appliance pages `appliance-install.md` and `appliance-configuration.md` | Rehearsal GB10 |
 | **4. Commission** | Site profile; hostname, TLS via Hakoteca Offline PKI, trusted proxy; first administrator; acceptance checks | Rehearsal GB10 |
-| **5. Lifecycle** | `status`, `upgrade` (backup, then migrate), `rollback`, `backup`/`restore`, redacted diagnostic bundle | Rehearsal GB10 |
+| **5. Lifecycle** | `status`, `upgrade` (backup, then migrate), `rollback`, `backup`/`restore`, redacted diagnostic bundle; appliance pages `appliance-upgrade.md`, `appliance-backup-restore.md` and `appliance-diagnostics.md` | Rehearsal GB10 |
 | **6. Delivery** | `hakobune push` over LAN (resumable rsync), USB SSD procedure, delta upgrades | Operator machine to rehearsal GB10 |
 | **7. First customer demo** | Office install, on-site commission | Customer GB10 |
 | **Later** | JIT support gate; remote upgrades through it | |
@@ -29,6 +29,7 @@
 
 | Date | Decision |
 | --- | --- |
+| 2026-11-03 | Hako ADR-024 accepted: Hakobune reads Hako's release manifest from the Core image, ships the appliance pages of Hako's Admin Guide in `admin-guide/`, and sets `HAKOTECA_APPLIANCE_RELEASE` and `HAKOTECA_ADMIN_GUIDE_EXTRA_DIR`. Release bundles need Hako 0.4.0 or later and all six appliance pages (`appliance-overview.md` written; the others come with the commands they describe in phases 3–5). |
 | 2026-11-02 | ADR-001 accepted. |
 | 2026-11-02 | Releases use calendar versions (`2026.11.0`); ADR-001 §12. |
 | 2026-11-02 | Artifact store and bundles stay on PGX's local disk, one release kept, hardlinked; ADR-001 §13. |

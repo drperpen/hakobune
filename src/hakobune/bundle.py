@@ -10,6 +10,7 @@ A bundle is a directory:
       models/<name>/...      weights as served
       recipes/<name>/...     recipe files
       notices/...            licenses and notices
+      admin-guide/...        appliance pages for Hako's Admin Guide (Hako ADR-024)
 
 Large files are hardlinked from the store, so a bundle costs almost no extra
 disk (ADR-001 §13). Store files are read-only, so a hardlink cannot be used to
@@ -26,7 +27,7 @@ import shutil
 import subprocess
 import zipfile
 
-from hakobune import __version__, docker, hashing
+from hakobune import __version__, docker, hako, hashing
 from hakobune.config import Components, check_relpath
 from hakobune.errors import HakobuneError
 from hakobune.store import Store
@@ -103,6 +104,18 @@ def release_blockers(components: Components, git_dirty: bool) -> list[str]:
     if git_dirty:
         out.append("the hakobune checkout has uncommitted changes")
     return out
+
+
+def hako_contract(lock: dict, store: Store) -> tuple[dict | None, list[str]]:
+    """The Hako release record for the bundle manifest, and what blocks a release."""
+    entry = next((e for e in lock.get("images", []) if e["name"] == hako.CORE_IMAGE), None)
+    if entry is None:
+        return None, [f"the lock has no {hako.CORE_IMAGE} image"]
+    manifest = hako.read_release_manifest(store.image_path(entry))
+    if manifest is None:
+        return None, [f"{entry['ref']} has no Hako release manifest (Hako 0.4.0 or later is required)"]
+    problems = hako.check_release_manifest(manifest, lock)
+    return (None if problems else hako.bundle_record(manifest)), problems
 
 
 class _Builder:
@@ -188,7 +201,10 @@ def build(root: str, components: Components, lock: dict, store: Store, release: 
     check_lock_matches(components, lock)
     commit = _git(root, "rev-parse", "HEAD")
     dirty = bool(_git(root, "status", "--porcelain"))
-    blockers = release_blockers(components, dirty)
+    with store.open():
+        hako_record, hako_blockers = hako_contract(lock, store)
+    guide, guide_blockers = hako.guide_pages(root)
+    blockers = release_blockers(components, dirty) + hako_blockers + guide_blockers
     if blockers and not dev:
         raise HakobuneError("cannot build a release:\n  " + "\n  ".join(blockers))
     for x in blockers:
@@ -216,6 +232,8 @@ def build(root: str, components: Components, lock: dict, store: Store, release: 
                     b.place(os.path.join(store.root, rel), rel, f["sha256"], f["size"])
             notice_lines = _notices(components, store, lock, b, dev)
         b.write("notices/README.md", ("\n".join(notice_lines) + "\n").encode())
+        for name, data in guide.items():
+            b.write(f"{hako.GUIDE_DIR}/{name}", data)
         pyz = os.path.join(stage, INSTALLER)
         write_pyz(os.path.dirname(os.path.abspath(__file__)), pyz)
         with open(pyz, "rb") as f:
@@ -231,6 +249,7 @@ def build(root: str, components: Components, lock: dict, store: Store, release: 
             "hakobune": {"version": __version__, "git_commit": commit, "git_dirty": dirty},
             "lock_sha256": lock_sha,
             "release_blockers": blockers,
+            "hako": hako_record,
             "components": {
                 "images": [{k: e[k] for k in ("name", "ref", "image_id", "platform", "registry_digest")}
                            for e in lock["images"]],

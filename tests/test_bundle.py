@@ -7,13 +7,33 @@ from unittest import mock
 
 from helpers import (REVISION, TempDirTest, layer_tar, make_git_repo, make_hf_model, make_image_archive)
 
-from hakobune import bundle, docker, signing
+from hakobune import bundle, docker, hako, signing
 from hakobune.config import (Components, ImageSpec, Local, LocalSource, ModelSpec, NoticeSpec, RecipeSpec)
 from hakobune.errors import HakobuneError
 from hakobune.lock import resolve_model, resolve_recipe
 from hakobune.store import Store
 
 NGC = b"NVIDIA DEEP LEARNING CONTAINER LICENSE\n"
+HAKO_REF = "hakoteca/core:9.9.9"
+
+
+def hako_manifest(**changes) -> bytes:
+    data = {
+        "schema": 1, "product": "Hakoteca Hako", "version": "9.9.9", "revision": "c" * 40,
+        "images": {"core": HAKO_REF, "gateway": "hakoteca/console-gateway:9.9.9"},
+        "alembic_heads": ["0023_conversation_purpose"],
+        "database_setup": {"module": "hakoteca_core.security.postgres_roles", "steps": ["x"],
+                           "grant_revision": "0009_knowledge_erasure"},
+        "settings": {"production_required": ["HAKOTECA_DATABASE_URL"], "all": ["HAKOTECA_DATABASE_URL"]},
+        "core": {"listen": "127.0.0.1:18030", "health": "/api/v1/health"},
+    }
+    data.update(changes)
+    return json.dumps(data).encode()
+
+
+def guide_page(name: str) -> bytes:
+    return (f"---\ntitle: {name}\naudience: [system-admin]\ncovers:\n  - README.md\n"
+            f"reviewed: 2026-11-03\n---\n\n# {name}\n\nText.\n").encode()
 
 
 class ImageFilesTest(TempDirTest):
@@ -49,6 +69,10 @@ class BundleTest(TempDirTest):
         self.root = os.path.join(self.tmp, "checkout")
         os.makedirs(self.root)
         subprocess.run(["git", "init", "-q", self.root], check=True)
+        os.makedirs(os.path.join(self.root, hako.GUIDE_DIR))
+        for name in hako.REQUIRED_PAGES:
+            with open(os.path.join(self.root, hako.GUIDE_DIR, name), "wb") as f:
+                f.write(guide_page(name))
         self._commit_root()
 
         model_dir = make_hf_model(self)
@@ -59,13 +83,20 @@ class BundleTest(TempDirTest):
         image_id = make_image_archive(img_src, [layer_tar({"NGC-DL-CONTAINER-LICENSE": NGC, "bin/x": b"x"})])
         image = {"name": "img", "ref": "test:1", "image_id": image_id, "platform": "linux/arm64",
                  "registry_digest": None, "size": 10}
-        self.lock = {"schema": 1, "images": [image], "models": [model], "recipes": [recipe]}
+        self.hako_src = os.path.join(self.tmp, "hako-src.tar")
+        hako_id = make_image_archive(self.hako_src, [layer_tar({
+            "usr/": None, "usr/share/": None, "usr/share/hakoteca/": None,
+            "usr/share/hakoteca/release.json": hako_manifest()})])
+        hako_image = {"name": hako.CORE_IMAGE, "ref": HAKO_REF, "image_id": hako_id, "platform": "linux/arm64",
+                      "registry_digest": None, "size": 10}
+        self.lock = {"schema": 1, "images": [image, hako_image], "models": [model], "recipes": [recipe]}
         with open(os.path.join(self.root, "hakobune.lock"), "w") as f:
             json.dump(self.lock, f)
         self._commit_root()
 
         self.components = Components(
-            images=(ImageSpec("img", "test:1", "linux/arm64", image_id),),
+            images=(ImageSpec("img", "test:1", "linux/arm64", image_id),
+                    ImageSpec(hako.CORE_IMAGE, HAKO_REF, "linux/arm64", hako_id)),
             models=(ModelSpec("m", "org/m", REVISION),),
             recipes=(RecipeSpec("r", "", commit, ("LICENSE", "map.json")),),
             notices=(
@@ -73,15 +104,20 @@ class BundleTest(TempDirTest):
                 NoticeSpec("r/LICENSE", "recipe", "r", "LICENSE"),
                 NoticeSpec("m/MODEL_CARD", "model", "m", "config.json"),
             ),
-            review={"img": "pending", "m": "pending", "r": "pending"},
+            review={"img": "pending", hako.CORE_IMAGE: "pending", "m": "pending", "r": "pending"},
         )
         self.store = Store(os.path.join(self.tmp, "store"), self.lock)
 
+        sources = {"test:1": (img_src, image_id), HAKO_REF: (self.hako_src, hako_id)}
+
         def fake_save(ref, platform, out):
-            with open(img_src, "rb") as a, open(out, "wb") as b:
+            with open(sources[ref][0], "rb") as a, open(out, "wb") as b:
                 b.write(a.read())
 
-        with mock.patch("hakobune.docker.inspect", return_value=docker.LocalImage(image_id, "linux/arm64", 10, ())), \
+        def fake_inspect(ref):
+            return docker.LocalImage(sources[ref][1], "linux/arm64", 10, ())
+
+        with mock.patch("hakobune.docker.inspect", side_effect=fake_inspect), \
              mock.patch("hakobune.docker.save", side_effect=fake_save), self.store.open():
             self.store.collect(Local(self.store.root, {"m": LocalSource(model_dir)}, {"r": repo}))
         self.out = os.path.join(self.tmp, "bundles")
@@ -111,6 +147,55 @@ class BundleTest(TempDirTest):
             self.assertEqual(f.read(), NGC)
         with open(os.path.join(path, "notices/README.md")) as f:
             self.assertIn(bundle.NVIDIA_SOURCE_NOTICE, f.read())
+
+    def test_bundle_carries_the_hako_contract_and_appliance_pages(self):
+        manifest = bundle.verify_bundle(self.build(), None, allow_unsigned=True, log=lambda *_: None)
+        paths = {f["path"] for f in manifest["files"]}
+        for name in hako.REQUIRED_PAGES:
+            self.assertIn(f"admin-guide/{name}", paths)
+        self.assertEqual(manifest["hako"]["version"], "9.9.9")
+        self.assertEqual(manifest["hako"]["alembic_heads"], ["0023_conversation_purpose"])
+        self.assertEqual(manifest["hako"]["database_setup"]["grant_revision"], "0009_knowledge_erasure")
+        self.assertFalse(any("Hako" in b or "appliance" in b for b in manifest["release_blockers"]))
+
+    def _approved(self):
+        return Components(self.components.images, self.components.models, self.components.recipes,
+                          self.components.notices, {k: "approved" for k in self.components.review})
+
+    def test_missing_appliance_page_blocks_a_release(self):
+        os.unlink(os.path.join(self.root, hako.GUIDE_DIR, "appliance-upgrade.md"))
+        self._commit_root()
+        with self.assertRaisesRegex(HakobuneError, "appliance-upgrade.md is missing"):
+            self.build("2026.11.0", self._approved())
+        manifest = bundle.verify_bundle(self.build(), None, allow_unsigned=True, log=lambda *_: None)
+        self.assertIn("appliance guide page admin-guide/appliance-upgrade.md is missing",
+                      manifest["release_blockers"])
+
+    def test_badly_named_or_unformatted_appliance_pages_are_refused(self):
+        for name, data in (("upgrade.md", guide_page("x")), ("appliance-x.md", b"# No frontmatter\n")):
+            path = os.path.join(self.root, hako.GUIDE_DIR, name)
+            with open(path, "wb") as f:
+                f.write(data)
+            with self.assertRaisesRegex(HakobuneError, "admin-guide/"):
+                self.build()
+            os.unlink(path)
+
+    def test_hako_image_without_a_release_manifest_blocks_a_release(self):
+        image_id = make_image_archive(self.hako_src, [layer_tar({"bin/x": b"x"})])
+        entry = next(e for e in self.lock["images"] if e["name"] == hako.CORE_IMAGE)
+        with mock.patch.object(self.store, "image_path", return_value=self.hako_src):
+            record, blockers = bundle.hako_contract(self.lock, self.store)
+        self.assertIsNone(record)
+        self.assertEqual(blockers, [f"{entry['ref']} has no Hako release manifest (Hako 0.4.0 or later is required)"])
+        self.assertTrue(image_id)
+
+    def test_hako_manifest_must_match_the_locked_images(self):
+        problems = hako.check_release_manifest(json.loads(hako_manifest(version="9.9.8")), self.lock)
+        self.assertIn("Hako manifest version '9.9.8' does not match the core image tag", problems)
+        problems = hako.check_release_manifest(json.loads(hako_manifest(images={"core": "x:1"})), self.lock)
+        self.assertTrue(any("core image" in p for p in problems))
+        problems = hako.check_release_manifest(json.loads(hako_manifest(alembic_heads=[])), self.lock)
+        self.assertIn("Hako manifest has no alembic_heads", problems)
 
     def test_large_files_are_hardlinked_from_the_store(self):
         path = self.build()
