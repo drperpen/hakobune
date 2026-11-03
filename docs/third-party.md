@@ -12,7 +12,7 @@ bundle's `notices/`.
 | Qwen vLLM image | `ghcr.io/salient-data/qwen38-next-dgx@sha256:3d67df7b…`, the prod image of `salient-data/qwen38-next-dgx-recipe` @ `f309019d…` (build `2026-10-14-77154ca6`) | Recipe and patches Apache-2.0 (Salient Data; patch 0002 from tonyd2wild, Apache-2.0); vLLM Apache-2.0; NVIDIA software under the NVIDIA Deep Learning Container License (`/NGC-DL-CONTAINER-LICENSE` in the image) | NVIDIA Deep Learning Container License read 2026-11-02 (see below); shipping appears permitted as a derived container inside Hakoteca, with conditions. Carry the recipe's NOTICE and patch PROVENANCE.md | Pending operator decision |
 | Embedding vLLM image | `vllm/vllm-openai@sha256:61fc8a89…` (`v0.28.0`) | vLLM Apache-2.0; bundled CUDA/NVIDIA libraries under NVIDIA terms | Same NVIDIA Deep Learning Container License, in the identical base layer (see below) | Pending operator decision |
 | PostgreSQL image | `postgres@sha256:ae69c452…` | PostgreSQL License; Debian base packages | Notices | Pending |
-| Hakoteca Core and Console gateway | Built from the Hakoteca `v0.2.3` tag | Hakoteca's own; images already carry license records | Carry Hakoteca's notices through | Pending |
+| Hakoteca Core and Console gateway | Built from the Hako `v0.4.0` tag | Hakoteca's own; images already carry license records | Carry Hakoteca's notices through | Pending |
 
 ## NVIDIA Deep Learning Container License (v. September 14, 2021)
 

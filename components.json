@@ -24,18 +24,18 @@
     },
     {
       "name": "hakoteca-core",
-      "ref": "hakoteca/core:0.2.3",
-      "image_id": "sha256:712079b1348d5c1ca9acd57bc6f03141d778aa7474166f93ffb460f144503647",
+      "ref": "hakoteca/core:0.4.0",
+      "image_id": "sha256:8019d2752ced6c2abccebfaaf38f24c502edfd961ec0e0c1d67eb329aef7e4fd",
       "platform": "linux/arm64",
-      "note": "Hakoteca v0.2.3, built by scripts/build-public-images.py; local build, no registry digest",
+      "note": "Hako v0.4.0, built by scripts/build-public-images.py; local build, no registry digest",
       "review": "pending"
     },
     {
       "name": "hakoteca-console-gateway",
-      "ref": "hakoteca/console-gateway:0.2.3",
-      "image_id": "sha256:ff376c2b1d6235444afa9494cc96b9f9f32f90b58043552fd7a007e58abd75be",
+      "ref": "hakoteca/console-gateway:0.4.0",
+      "image_id": "sha256:4ce08287a5401bcbe31eeb38e00f9f36b804e7b6811f3011c581d46a8a946506",
       "platform": "linux/arm64",
-      "note": "Hakoteca v0.2.3, built by scripts/build-public-images.py; local build, no registry digest",
+      "note": "Hako v0.4.0, built by scripts/build-public-images.py; local build, no registry digest",
       "review": "pending"
     }
   ],
